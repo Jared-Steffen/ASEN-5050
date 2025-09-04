@@ -3,7 +3,7 @@ clc; clear; close all
 %% Problem Statement
 %{
 Write a computer program “package” that will take an initial spacecraft 
-position andvelocity vector, r_o, v_o, at an initial time t_o, and predict
+position and velocity vector, r_o, v_o, at an initial time t_o, and predict
 the future/past position and velocity of the spacecraft at an arbitrary 
 time t. To implement this you need to implement three distinct steps:
 
