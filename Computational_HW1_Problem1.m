@@ -40,7 +40,7 @@ v0 = [-5 5 0]; % km/s
 t0 = 0; % s
 
 % Determine orbital elements
-[p,a,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
+[p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
 
 % Total simulation time
 t_step = 60; % s
@@ -56,38 +56,68 @@ f = keplers_equation(e,t,tp,n,error);
 [r,v] = solution_2BP(mu,Omega,i,w,f,p,e);
 
 % Plot r and v in the position and velocity space
-figure();
-plot3(r(1,1:length(t)/2),r(2,1:length(t)/2),r(3,1:length(t)/2),'g','LineWidth',2)
-hold on
-plot3(r(1,length(t)/2:end),r(2,length(t)/2:end),r(3,length(t)/2:end),'.-r','LineWidth',2)
-plot3(0,0,0,'.k','MarkerSize',100)
+figure(1);
+plot3(r(1,:),r(2,:),r(3,:),'LineWidth',2)
 grid on; grid minor
 xlabel('x distance [km]')
 ylabel('y distance [km]')
 zlabel('z distance [km]')
 title('Position Space for 2 Orbital Periods')
-legend('Orbital Period 1','Orbital Period 2','Central Body')
 
-figure();
-plot3(v(1,1:length(t)/2),v(2,1:length(t)/2),v(3,1:length(t)/2),'g','LineWidth',2)
-hold on
-plot3(v(1,length(t)/2:end),v(2,length(t)/2:end),v(3,length(t)/2:end),'.-r','LineWidth',2)
-plot3(0,0,0,'.k','MarkerSize',100)
+figure(2);
+plot3(v(1,:),v(2,:),v(3,:),'LineWidth',2)
 grid on; grid minor
 xlabel('x velocity component [km/s]')
 ylabel('y velocity component [km/s]')
 zlabel('z velocity component [km/s]')
 title('Velocity Space for 2 Orbital Periods')
-legend('Orbital Period 1','Orbital Period 2','Central Body')
 
 %% Part ii)
 
 % Givens
 rp = 10000; % km
+i = deg2rad(135); % rad
+Omega = deg2rad(45); % rad
+w = deg2rad(-90); % rad
+e = [0 0.25 0.5 0.75 0.9];
+
+% Semi-major axis
+a = rp./(1-e);
+
+% Semi-latus rectum
+p = a.*(1-e.^2);
+
+% Time of periapsis passage and period
+n = sqrt(mu./a.^3);
+T = (2*pi)./n;
+f0 = atan2(rp,0);
+E0 = 2*atan2(sin(sqrt((1-e)/(1+e))*tan(f0/2)),cos(sqrt((1-e)/(1+e))*tan(f0/2)));
+tp = t0 - (1./n).*(E0-e.*sin(E0));
+
+% Total simulation time
+t_step = 60; % s
+for i = 1:length(T)    
+    t = t0:t_step:2*T(i);
+    f = keplers_equation(e,t,tp,n,error);
+% end
+% 
+% % % Solve Kepler's Equation
+% % f = keplers_equation(e,t,tp,n,error);
+% 
+% for i =1:size(f,2)
+    [r,v] = solution_2BP(mu,Omega,i,w,f,p(i),e(i));
+    figure(i+2);
+    plot3(r(1,:),r(2,:),r(3,:),'LineWidth',2)
+    grid on; grid minor
+    xlabel('x distance [km]')
+    ylabel('y distance [km]')
+    zlabel('z distance [km]')
+    title('Position Space for 2 Orbital Periods')
+end
 
 
 %% Functions
-function [p,a,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
+function [p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
 
     % Unit vectors
@@ -140,21 +170,24 @@ function f = keplers_equation(e,t,tp,n,error)
     % Goal: Generate true anomaly at each time step in the simulation
 
     % Initialize true anomaly
-    f = zeros(length(t),1);
+    f = zeros(length(t),length(e));
 
     % Iteration scheme for each time step
-    for i = 1:length(t)
-        M_star = n*(t(i)-tp);
-        current_E = M_star;
-        Euler_function = abs(M_star - current_E+e*sin(current_E));
-        while Euler_function > error
-            delta_E = -(M_star - current_E+e*sin(current_E))/(-1+e*cos(current_E));
-            current_E = current_E + delta_E;
-            Euler_function = abs(M_star - current_E+e*sin(current_E));
+    for j = 1:length(e)
+        for i = 1:length(t)
+            M_star = n*(t(i)-tp(j));
+            current_E = M_star(j);
+            Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
+            while Euler_function > error
+                delta_E = -(M_star(j) - current_E+e(j)*sin(current_E))/(-1+e(j)*cos(current_E));
+                current_E = current_E + delta_E;
+                Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
+            end
+            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2), sqrt(1-e(j))*cos(current_E/2));
         end
-        f(i) = 2*atan2(sqrt(1+e)*sin(current_E/2), sqrt(1-e)*cos(current_E/2));
     end
 end
+
 
 function [r,v] = solution_2BP(mu,Omega,i,w,f,p,e)
     % Goal: Determine r and v at every time step of the simulation
