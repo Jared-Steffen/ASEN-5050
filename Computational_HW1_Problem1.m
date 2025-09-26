@@ -40,7 +40,7 @@ v0 = [-5 5 0]; % km/s
 t0 = 0; % s
 
 % Determine orbital elements
-[p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
+[a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
 
 % Total simulation time
 t_step = 60; % s
@@ -99,12 +99,6 @@ t_step = 60; % s
 for i = 1:length(T)    
     t = t0:t_step:2*T(i);
     f = keplers_equation(e,t,tp,n,error);
-% end
-% 
-% % % Solve Kepler's Equation
-% % f = keplers_equation(e,t,tp,n,error);
-% 
-% for i =1:size(f,2)
     [r,v] = solution_2BP(mu,Omega,i,w,f,p(i),e(i));
     figure(i+2);
     plot3(r(1,:),r(2,:),r(3,:),'LineWidth',2)
@@ -117,7 +111,7 @@ end
 
 
 %% Functions
-function [p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
+function [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
 
     % Unit vectors
@@ -151,7 +145,7 @@ function [p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     w = atan2(dot(e_hat,n_Omega_hat_perp),dot(e_hat,n_Omega_hat));
 
     % Specific energy
-    epsilon = 0.5*norm(v0)-mu/norm(r0);
+    epsilon = 0.5*norm(v0)^2-mu/norm(r0);
 
     % Semi-major axis
     a = -mu/(2*epsilon);
@@ -162,7 +156,7 @@ function [p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
 
     % Time of periapsis passage
     f0 = atan2(dot(r0,e_hat),dot(r0,e_hat_perp));
-    E0 = 2*atan2(sin(sqrt((1-e)/(1+e))*tan(f0/2)),cos(sqrt((1-e)/(1+e))*tan(f0/2)));
+    E0 = 2*atan2(sqrt((1-e))*sin(f0/2),sqrt((1+e))*cos(f0/2));
     tp = t0 - (1/n)*(E0-e*sin(E0));
 end
 
@@ -183,7 +177,7 @@ function f = keplers_equation(e,t,tp,n,error)
                 current_E = current_E + delta_E;
                 Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
             end
-            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2), sqrt(1-e(j))*cos(current_E/2));
+            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2),sqrt(1-e(j))*cos(current_E/2));
         end
     end
 end
