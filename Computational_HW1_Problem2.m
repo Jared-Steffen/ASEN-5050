@@ -58,14 +58,14 @@ tspan = t0:t_step:2*T;
 % Orbital Elements
 [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0);
 
-% Orbit parameter plots
+% Normalize h
+h = zeros(height(state),1);
 for j = 1:height(h_vec)
     h(j) = norm(h_vec(j,:));
 end
-all_params = [a',e',inc',Omega',w',tp',h',epsilon'];
 
 % Plotting
-ylabels = ["$x$ [km]","$y$ [km]","$z$ [km]","$\dot{x}$ [km/s]","$\dot{y}$ [km/s]","$\dot{z}$ [km/s]"];
+ylabels_pos = ["$x$ [km]","$y$ [km]","$z$ [km]","$\dot{x}$ [km/s]","$\dot{y}$ [km/s]","$\dot{z}$ [km/s]"];
 
 figure(1);
 for i = 1:width(state)
@@ -73,20 +73,70 @@ for i = 1:width(state)
     plot(t/3600,state(:,i),'LineWidth',2)
     grid on; grid minor
     xlabel('Time [hr]')
-    ylabel(ylabels(i),'Interpreter','latex')
+    ylabel(ylabels_pos(i),'Interpreter','latex')
 end
-sgtitle('States for 2 Orbital Periods')
+sgtitle('Position and Velocity Components for 2 Orbital Periods')
 
 figure(2);
 plot3(state(:,1),state(:,2),state(:,3),'LineWidth',2)
 grid on; grid minor
-xlabel('x distance [km]')
-ylabel('y distance [km]')
-zlabel('z distance [km]')
+xlabel("$x$ [km]",'Interpreter','latex')
+ylabel("$y$ [km]",'Interpreter','latex')
+zlabel("$z$ [km]",'Interpreter','latex')
 title('Position Space for 2 Orbital Periods')
+
+figure(3);
+plot3(state(:,4),state(:,5),state(:,6),'LineWidth',2)
+grid on; grid minor
+xlabel("$\dot{x}$ [km/s]",'Interpreter','latex')
+ylabel("$\dot{y}$ [km/s]",'Interpreter','latex')
+zlabel("$\dot{z}$ [km/s]",'Interpreter','latex')
+title('Velocity Space for 2 Orbital Periods')
+
+figure(4);
+subplot(3,1,1)
+plot(t/3600,rad2deg(Omega),'LineWidth',2)
+xlabel('Time [hr]')
+ylabel("$\Omega$ [degrees]",'Interpreter','latex')
+grid on;grid minor
+subplot(3,1,2)
+plot(t/3600,rad2deg(w),'LineWidth',2)
+ylabel("$\omega$ [degrees]",'Interpreter','latex')
+grid on;grid minor
+subplot(3,1,3)
+plot(t/3600, rad2deg(inc),'LineWidth',2)
+ylabel("$i$ [degrees]",'Interpreter','latex')
+grid on;grid minor
+sgtitle('Orbital Elements: Angles')
+
+figure(5);
+subplot(2,1,1)
+plot(t/3600,a,'LineWidth',2)
+xlabel('Time [hr]')
+ylabel("Semi-major axis $a$ [km]",'Interpreter','latex')
+grid on;grid minor
+subplot(2,1,2)
+plot(t/3600,e,'LineWidth',2)
+xlabel('Time [hr]')
+ylabel("Eccetricity $e$",'Interpreter','latex')
+grid on;grid minor
+sgtitle('Orbital Elements: Geometry')
+
+figure(6);
+plot(t/3600,tp/3600,"LineWidth",2)
+xlabel('Time [hr]')
+ylabel('Time Since Periapsis Passage [hr]')
+grid on; grid minor
+title('Time Since Periapsis Passage')
+hold on
+xline((T+tp(1))/3600,':r','LineWidth',2)
+xline((2*T+tp(1))/3600,':r','LineWidth',2)
+legend('Time Since Periapsis Passage','End of Orbital Periods when t_0 = t_p','Location','northwest')
 
 %% Functions
 function [var_dot] = OrbitEOM(~,var,mu)
+    % Goal: Output ODEs for ode45
+
     % Extract state variables
     x = var(1);
     y = var(2);
@@ -110,7 +160,7 @@ function [var_dot] = OrbitEOM(~,var,mu)
     var_dot = [x_dot;y_dot;z_dot;u_dot;v_dot;w_dot];
 end
 
-function [a,e,i,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
+function [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
     
     % Extract r and v at each timestep
@@ -122,6 +172,16 @@ function [a,e,i,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
     y_hat = [0 1 0]';
     z_hat = [0 0 1]';
 
+   % Initialize outputs
+   h_vec = zeros(size(r));
+   inc = zeros(height(state),1);
+   a = zeros(height(state),1);
+   e = zeros(height(state),1);
+   w = zeros(height(state),1);
+   Omega = zeros(height(state),1);
+   epsilon = zeros(height(state),1);
+   tp = zeros(height(state),1);
+
     for j = 1:height(r)
         % Angular momentum
         h_vec(j,:) = cross(r(j,:),v(j,:)); 
@@ -129,10 +189,7 @@ function [a,e,i,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
         h_hat = h_vec(j,:)./h;
     
         % Inclination
-        i(j) = acos(dot(h_hat,z_hat));
-    
-        % Semi-latus rectum
-        p = h^2/mu;
+        inc(j) = acos(dot(h_hat,z_hat));
     
         % RAAN
         n_Omega_hat = cross(z_hat,h_hat)/norm(cross(z_hat,h_hat));
