@@ -53,7 +53,8 @@ t_step = 60;
 tspan = t0:t_step:2*T;
 
 % ode45 call
-[t,state] = ode45(@(tspan,var) OrbitEOM(tspan,var,mu),tspan,var);
+options = odeset('RelTol',1e-6,'AbsTol',1e-9);
+[t,state] = ode45(@(tspan,var) OrbitEOM(tspan,var,mu),tspan,var,options);
 
 % Orbital Elements
 [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0);
