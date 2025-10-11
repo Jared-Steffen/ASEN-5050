@@ -64,6 +64,8 @@ ylabel('y distance [km]')
 zlabel('z distance [km]')
 title('Position Space for 2 Orbital Periods')
 
+exportgraphics(gcf, 'part_1i_position_space.png', 'Resolution', 300);
+
 figure(2);
 plot3(v(1,:),v(2,:),v(3,:),'LineWidth',2)
 grid on; grid minor
@@ -71,6 +73,8 @@ xlabel('x velocity component [km/s]')
 ylabel('y velocity component [km/s]')
 zlabel('z velocity component [km/s]')
 title('Velocity Space for 2 Orbital Periods')
+
+exportgraphics(gcf, 'part_1i_velocity_space.png', 'Resolution', 300);
 
 %% Part ii)
 
@@ -107,6 +111,7 @@ for i = 1:length(T)
     ylabel('y distance [km]')
     zlabel('z distance [km]')
     title('Position Space for 2 Orbital Periods')
+    exportgraphics(gcf,['part_1ii_position_space' num2str(i) '.png'], 'Resolution', 300);
 end
 
 

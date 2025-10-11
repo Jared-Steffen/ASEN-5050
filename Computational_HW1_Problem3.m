@@ -25,10 +25,11 @@ times equal to twice of the parabolic transfer times and solve Lambert’s probl
 between these two points.
 %}
 
-% Givens
-mu = 1;
-r1 = [1,0,0];
-r2 = [0,2,0];
+% Givens/ICs
+mu = 1; % km^3/s^2
+r1 = [1,0,0]; % km
+r2 = [0,2,0]; % km
+delta_t = 1000; % s
 
 % Calculate chord
 c = r2 - r1;

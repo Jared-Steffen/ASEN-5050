@@ -69,16 +69,30 @@ end
 ylabels_pos = ["$x$ [km]","$y$ [km]","$z$ [km]","$\dot{x}$ [km/s]","$\dot{y}$ [km/s]","$\dot{z}$ [km/s]"];
 
 figure(1);
-for i = 1:width(state)
-    subplot(6,1,i)
+for i = 1:width(state)/2
+    subplot(3,1,i)
     plot(t/3600,state(:,i),'LineWidth',2)
     grid on; grid minor
     xlabel('Time [hr]')
     ylabel(ylabels_pos(i),'Interpreter','latex')
 end
-sgtitle('Position and Velocity Components for 2 Orbital Periods')
+sgtitle('Position Components for 2 Orbital Periods')
+
+exportgraphics(gcf, 'part_2_position_state_vars.png', 'Resolution', 300);
 
 figure(2);
+for i = 1:width(state)/2
+    subplot(3,1,i)
+    plot(t/3600,state(:,i+3),'LineWidth',2)
+    grid on; grid minor
+    xlabel('Time [hr]')
+    ylabel(ylabels_pos(i+3),'Interpreter','latex')
+end
+sgtitle('Velocity Components for 2 Orbital Periods')
+
+exportgraphics(gcf, 'part_2_velocity_state_vars.png', 'Resolution', 300);
+
+figure(3);
 plot3(state(:,1),state(:,2),state(:,3),'LineWidth',2)
 grid on; grid minor
 xlabel("$x$ [km]",'Interpreter','latex')
@@ -86,7 +100,9 @@ ylabel("$y$ [km]",'Interpreter','latex')
 zlabel("$z$ [km]",'Interpreter','latex')
 title('Position Space for 2 Orbital Periods')
 
-figure(3);
+exportgraphics(gcf, 'part_2_position_space.png', 'Resolution', 300);
+
+figure(4);
 plot3(state(:,4),state(:,5),state(:,6),'LineWidth',2)
 grid on; grid minor
 xlabel("$\dot{x}$ [km/s]",'Interpreter','latex')
@@ -94,7 +110,9 @@ ylabel("$\dot{y}$ [km/s]",'Interpreter','latex')
 zlabel("$\dot{z}$ [km/s]",'Interpreter','latex')
 title('Velocity Space for 2 Orbital Periods')
 
-figure(4);
+exportgraphics(gcf, 'part_2_velocity_space.png', 'Resolution', 300);
+
+figure(5);
 subplot(3,1,1)
 plot(t/3600,rad2deg(Omega),'LineWidth',2)
 xlabel('Time [hr]')
@@ -110,7 +128,9 @@ ylabel("$i$ [degrees]",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Orbital Elements: Angles')
 
-figure(5);
+exportgraphics(gcf, 'part_2_orbital_angles.png', 'Resolution', 300);
+
+figure(6);
 subplot(2,1,1)
 plot(t/3600,a,'LineWidth',2)
 xlabel('Time [hr]')
@@ -123,7 +143,9 @@ ylabel("Eccetricity $e$",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Orbital Elements: Geometry')
 
-figure(6);
+exportgraphics(gcf, 'part_2_orbital_geometry.png', 'Resolution', 300);
+
+figure(7);
 plot(t/3600,tp/3600,"LineWidth",2)
 xlabel('Time [hr]')
 ylabel('Time Since Periapsis Passage [hr]')
@@ -133,6 +155,8 @@ hold on
 xline((T+tp(1))/3600,':r','LineWidth',2)
 xline((2*T+tp(1))/3600,':r','LineWidth',2)
 legend('Time Since Periapsis Passage','End of Orbital Periods when t_0 = t_p','Location','northwest')
+
+exportgraphics(gcf, 'part_2_time_of_periapsis_passage.png', 'Resolution', 300);
 
 %% Functions
 function [var_dot] = OrbitEOM(~,var,mu)
