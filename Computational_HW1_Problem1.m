@@ -36,11 +36,20 @@ x − y − z space over two orbit periods for: e = 0, 0.25, 0.5, 0.75, 0.9
 % ICs
 mu = 4e5; % km^3/s^2
 r0 = [6 6 6] .* 1e3; % km
-v0 = [-5 5 0]; % km/s
+v0 = [1.1772 3.8117 -2.1160]; % km/s
 t0 = 0; % s
 
 % Determine orbital elements
 [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
+
+disp('Part 1i Results:')
+disp("Semi-major axis: " + a + " km")
+disp("Eccentricity: " + e)
+disp("Inclination: " + rad2deg(i) + " degrees")
+disp("RAAN: " + rad2deg(Omega) + " degrees")
+disp("Argument of Periapsis: " + rad2deg(w) + " degrees")
+disp("Time of Periapsis Passage (realtive to t0): " + tp + " s")
+disp("Orbital Period: " + T + " s")
 
 % Total simulation time
 t_step = 60; % s
@@ -55,6 +64,9 @@ f = keplers_equation(e,t,tp,n,error);
 % Solve 2BP
 [r,v] = solution_2BP(mu,Omega,i,w,f,p,e);
 
+% Save for comparison to problem 2
+save("r_v_1i", "r", "v")
+
 % Plot r and v in the position and velocity space
 figure(1);
 plot3(r(1,:),r(2,:),r(3,:),'LineWidth',2)
@@ -64,7 +76,7 @@ ylabel('y distance [km]')
 zlabel('z distance [km]')
 title('Position Space for 2 Orbital Periods')
 
-exportgraphics(gcf, 'part_1i_position_space.png', 'Resolution', 300);
+% exportgraphics(gcf, 'part_1i_position_space.png', 'Resolution', 300);
 
 figure(2);
 plot3(v(1,:),v(2,:),v(3,:),'LineWidth',2)
@@ -74,7 +86,7 @@ ylabel('y velocity component [km/s]')
 zlabel('z velocity component [km/s]')
 title('Velocity Space for 2 Orbital Periods')
 
-exportgraphics(gcf, 'part_1i_velocity_space.png', 'Resolution', 300);
+% exportgraphics(gcf, 'part_1i_velocity_space.png', 'Resolution', 300);
 
 %% Part ii)
 
@@ -83,7 +95,7 @@ rp = 10000; % km
 i = deg2rad(135); % rad
 Omega = deg2rad(45); % rad
 w = deg2rad(-90); % rad
-e = [0 0.25 0.5 0.75 0.9];
+e = [0 0.25 0.5 0.75 0.99];
 
 % Semi-major axis
 a = rp./(1-e);
@@ -111,7 +123,7 @@ for i = 1:length(T)
     ylabel('y distance [km]')
     zlabel('z distance [km]')
     title('Position Space for 2 Orbital Periods')
-    exportgraphics(gcf,['part_1ii_position_space' num2str(i) '.png'], 'Resolution', 300);
+    % exportgraphics(gcf,['part_1ii_position_space' num2str(i) '.png'], 'Resolution', 300);
 end
 
 
