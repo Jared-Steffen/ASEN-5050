@@ -156,19 +156,6 @@ sgtitle('Orbital Elements: Geometry')
 
 % exportgraphics(gcf, 'part_2_orbital_geometry.png', 'Resolution', 300);
 
-figure(7);
-plot(t/3600,tp/3600,"LineWidth",2)
-xlabel('Time [hr]')
-ylabel('Time Since Periapsis Passage [hr]')
-grid on; grid minor
-title('Time Since Periapsis Passage')
-hold on
-xline((T+tp(1))/3600,':r','LineWidth',2)
-xline((2*T+tp(1))/3600,':r','LineWidth',2)
-legend('Time Since Periapsis Passage','End of Orbital Periods when t = t_p','Location','northwest')
-
-% exportgraphics(gcf, 'part_2_time_of_periapsis_passage.png', 'Resolution', 300);
-
 %% Functions
 function [var_dot] = OrbitEOM(~,var,mu)
     % Goal: Output ODEs for ode45
@@ -251,7 +238,7 @@ function [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
         n = sqrt(mu/a(j)^3);
     
         % Time of periapsis passage
-        f0 = atan2(dot(r(j,:),e_hat),dot(r(j,:),e_hat_perp));
+        f0 = atan2(dot(r(j,:),e_hat_perp),dot(r(j,:),e_hat));
         E0 = 2*atan2(sqrt((1-e(j)))*sin(f0/2),sqrt((1+e(j)))*cos(f0/2));
         tp(j) = t0 - (1/n)*(E0-e(j)*sin(E0));
     end

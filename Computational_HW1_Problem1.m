@@ -36,7 +36,7 @@ x − y − z space over two orbit periods for: e = 0, 0.25, 0.5, 0.75, 0.9
 % ICs
 mu = 4e5; % km^3/s^2
 r0 = [6 6 6] .* 1e3; % km
-v0 = [1.1772 3.8117 -2.1160]; % km/s
+v0 = [-5 5 0]; % km/s
 t0 = 0; % s
 
 % Determine orbital elements
@@ -172,7 +172,7 @@ function [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     T = (2*pi)/n;
 
     % Time of periapsis passage
-    f0 = atan2(dot(r0,e_hat),dot(r0,e_hat_perp));
+    f0 = atan2(dot(r0,e_hat_perp),dot(r0,e_hat));
     E0 = 2*atan2(sqrt((1-e))*sin(f0/2),sqrt((1+e))*cos(f0/2));
     tp = t0 - (1/n)*(E0-e*sin(E0));
 end

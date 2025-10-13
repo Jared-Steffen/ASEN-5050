@@ -28,13 +28,13 @@ between these two points.
 %% Testing Algorithm w/ Problem 1 and 2 Code
 % Givens/ICs
 mu1 = 4e5; % km^3/s^2
-r1_vec = [6,6,6].*1e3; % km
-r2_vec = [6,-6,6].*1e3; % km
-delta_t = 3000; % s
+r1_vec = [5,5,5].*1e3; % km
+r2_vec = [-5,-6,5].*1e3; % km
+delta_t = 1800; % s
 
-[v1,v2] = LambertsTheorem(mu1,delta_t,r1_vec,r2_vec);
+[v1,~,~,~,~] = LambertsTheorem(mu1,delta_t,r1_vec,r2_vec);
 
-% Use functions from problem 1 to verify both transfer ellipse
+% Use functions from problem 1 to verify both transfer ellipses
 t0 = 0; % s
 [a1,p1,e1,i1,Omega1,w1,T1,n1,tp1] = orbital_elements(mu1,r1_vec,v1(1,:),t0);
 [a2,p2,e2,i2,Omega2,w2,T2,n2,tp2] = orbital_elements(mu1,r1_vec,v1(2,:),t0);
@@ -83,85 +83,71 @@ zlabel("$z$ [km]",'Interpreter','latex')
 title("Transfer Orbits for Lambert's Problem")
 legend('Transfer Orbit 1','Transfer Orbit 2','r1','r2')
 
-%% Calculations for minimum transfer ellipse
+%% Calculations for minimum (energy, eccentricity) transfer ellipses
 % Givens/ICs
-% mu2 = 1; % km^3/s^2
-% r1_2_vec = [1,0,0]; % km
-% r2_2_vec = [0,2,0]; % km
-% delta_t = ; % s
-% 
-% [v1_2,v2_2] = LambertsTheorem(mu2,delta_t,r1_2_vec,r2_2_vec);
+mu2 = 1; % km^3/s^2
+r1_2_vec = [1,0,0]; % km
+r2_2_vec = [0,2,0]; % km
+delta_t1 = 3.7712; % s
+delta_t2 = 4.2164; % s
+
+[v1_2a,a_m,t_m,e_m,t_pm] = LambertsTheorem(mu2,delta_t1,r1_2_vec,r2_2_vec);
+[v1_2b,a_m,t_m,e_m,t_pm] = LambertsTheorem(mu2,delta_t2,r1_2_vec,r2_2_vec);
+
+% Minimum Eccentricity TOF
+syms w
+eqn1 = norm(r1_2_vec)*(1+e_m*cos(0-w)) == norm(r2_2_vec)*(1+e_m*cos((pi/2)-w));
+
+omega = double(vpasolve(eqn1, w));
+f1 =  0 - omega;
+f2 = pi/2 - omega;
+
+E1 = 2*atan2(sqrt((1-e_m))*sin(f1/2),sqrt((1+e_m))*cos(f1/2));
+E2 = 2*atan2(sqrt((1-e_m))*sin(f2/2),sqrt((1+e_m))*cos(f2/2));
+
+p = norm(r1_2_vec)*(1+e_m*cos(0-omega));
+a = p/(1-e_m^2);
+T = (2*pi)/sqrt(mu2)*a^(1.5);
+
+ToF1 = (a^(1.5)*(E2-E1-e_m*(sin(E2)-sin(E1))))/sqrt(mu2);
+ToF2 = T - ToF1;
+
+% 2*Parabolic ToF Plot (using problem 1 and 2 code)
+t0 = 0; % s
+[a1,p1,e1,i1,Omega1,w1,T1,n1,tp1] = orbital_elements(mu2,r1_2_vec,v1_2a(1,:),t0);
+[a2,p2,e2,i2,Omega2,w2,T2,n2,tp2] = orbital_elements(mu2,r1_2_vec,v1_2b(1,:),t0);
+t_step = 0.01; % s
+t1 = t0:t_step:T1;
+t2 = t0:t_step:T2;
+
+error = 1e-6;
+f1 = keplers_equation(e1,t1,tp1,n1,error);
+f2 = keplers_equation(e2,t2,tp2,n2,error);
+
+[r1_1,~] = solution_2BP(mu2,Omega1,i1,w1,f1,p1,e1);
+[r1_2,~] = solution_2BP(mu2,Omega2,i2,w2,f2,p2,e2);
+
+var1 = [r1_2_vec';v1_2a(1,:)'];
+var2 = [r1_2_vec';v1_2b(1,:)'];
+options = odeset('RelTol',1e-6,'AbsTol',1e-9);
+[t1,state1] = ode45(@(t1,var1) OrbitEOM(t1,var1,mu2),t1,var1,options);
+[t2,state2] = ode45(@(t2,var2) OrbitEOM(t1,var2,mu2),t2,var2,options);
+
+figure(3);
+plot3(state1(:,1),state1(:,2),state1(:,3),'LineWidth',2)
+hold on
+plot3(state2(:,1),state2(:,2),state2(:,3),'LineWidth',2)
+plot3(r1_2_vec(1),r1_2_vec(2),r1_2_vec(3),'.','MarkerSize',50)
+plot3(r2_2_vec(1),r2_2_vec(2),r2_2_vec(3),'.','MarkerSize',50)
+grid on; grid minor
+xlabel("$x$ [km]",'Interpreter','latex')
+ylabel("$y$ [km]",'Interpreter','latex')
+zlabel("$z$ [km]",'Interpreter','latex')
+title("Transfer Orbits for Lambert's Problem when $\Delta t = 2t_{parabolic}$",'Interpreter','latex')
+legend('Transfer Orbit 1','Transfer Orbit 2','r1','r2')
 
 %% Functions (some are taken from problems 1 and 2)
-% function [v1,v2] = LambertsTheorem(mu,delta_t,r1_vec,r2_vec)
-% 
-% % Calculate magnitude of distances
-% r1 = norm(r1_vec);
-% r1_hat = r1_vec./r1;
-% r2 = norm(r2_vec);
-% r2_hat = r2_vec./r2;
-% 
-% % Calculate chord
-% c_vec = r2_vec - r1_vec;
-% c = norm(c_vec);
-% c_hat = c_vec./c;
-% 
-% % Solve for semi-major axis, alpha, beta
-% syms a a_angle0 b_angle0
-% a_angle = a_angle0;
-% b_angle = b_angle0;
-% eqn1 = a^1.5*(a_angle-b_angle-(sin(a_angle)-sin(b_angle))) == sqrt(mu)*delta_t;
-% eqn2 = 1/(4*a)*(r1+r2+c) == sin(a_angle/2)^2;
-% eqn3 = 1/(4*a)*(r1+r2-c) == sin(b_angle/2)^2;
-% 
-% soln = vpasolve([eqn1,eqn2,eqn3], [a,a_angle0,b_angle0]);
-% 
-% a1 = double(soln.a);
-% alpha1 = double(soln.a_angle0);
-% beta1 = double(soln.b_angle0);
-% 
-% % Determine if transfer is elliptic or hyperbolic
-% if beta1 < 0
-%     delta_t_parabolic = ((r1+r2+c)^1.5+(r1+r2-c)^1.5)/(6*sqrt(mu));
-% else
-%     delta_t_parabolic = ((r1+r2+c)^1.5-(r1+r2-c)^1.5)/(6*sqrt(mu));
-% end
-% 
-% if delta_t_parabolic > delta_t
-%     disp("This requested transfer is hyperoblic")
-%     % Solve for necessary intial velocity
-%     A = sqrt(mu/(4*a1))*cot(alpha1/2);
-%     B = sqrt(mu/(4*a1))*cot(beta1/2);   
-%     v1 = (B+A).*c_hat + (B-A).*r1_hat;
-%     v2 = (B+A).*c_hat - (B-A).*r2_hat;
-% elseif delta_t_parabolic < delta_t
-%     disp("This requested transfer is elliptic")
-%     % Solve for necessary intial velocity for bth transfers
-%     A1 = sqrt(mu/(4*a1))*cot(alpha1/2);
-%     B1 = sqrt(mu/(4*a1))*cot(beta1/2);
-% 
-%     a_angle = 2*pi - a_angle0;
-%     b_angle = -b_angle0;
-%     eqn1 = a^1.5*(a_angle-b_angle-(sin(a_angle)-sin(b_angle))) == sqrt(mu)*delta_t;
-%     eqn2 = 1/(4*a)*(r1+r2+c) == sin(a_angle/2)^2;
-%     eqn3 = 1/(4*a)*(r1+r2-c) == sin(b_angle/2)^2;
-% 
-%     soln = vpasolve([eqn1,eqn2,eqn3], [a,a_angle0,b_angle0]);
-% 
-%     a2 = double(soln.a);
-%     alpha2 = double(soln.a_angle0);
-%     beta2 = double(soln.b_angle0);
-% 
-%     A2 = sqrt(mu/(4*a2))*cot(alpha2/2);
-%     B2 = sqrt(mu/(4*a2))*cot(beta2/2);
-% 
-%     v1 = [(B1+A1).*c_hat + (B1-A1).*r1_hat;(B2+A2).*c_hat + (B2-A2).*r1_hat];
-%     v2 = [(B1+A1).*c_hat - (B1-A1).*r2_hat;(B2+A2).*c_hat - (B2-A2).*r2_hat];
-% end
-% 
-% end
-
-function [v1,a_m,t_F,e_m] = LambertsTheorem(mu,delta_t,r1_vec,r2_vec)
+function [v1,a_m,t_m,e_m,tp_m] = LambertsTheorem(mu,delta_t,r1_vec,r2_vec)
 
 % Calculate magnitude of distances and angle between
 r1 = norm(r1_vec);
@@ -177,72 +163,63 @@ c = norm(c_vec);
 c_hat = c_vec./c;
 
 % Minimum energy ellipse and TOFs
-a_m = 0.25*(norm(r1_vec)+norm(r2_vec)+norm(r2_vec-r1_vec));
+a_m = 0.25*(r1+r2+c);
 s = 0.5*(r1+r2+c);
 beta_m = 2*asin(sqrt((s-c)/s));
 t_m = ((pi-beta_m+sin(beta_m))*sqrt(s^3/8))/sqrt(mu);
-n = sqrt(mu/a_m^3);
-T = (2*pi)/n;
+n_m = sqrt(mu/a_m^3);
+T_m = (2*pi)/n_m;
 
 % Determine both travels times per ellipse
-t_F2 = T-delta_t;
+t_F2 = T_m-delta_t;
 t_F = [delta_t,t_F2];
 
-% Minimum eccentricity ellipse and TOFs
-e_m = (r2-r1)/c;
+% Minimum eccentricity ellipse
+e_m = abs((r2-r1))/c;
 
-% Solve for semi-major axis, alpha, beta
-syms a alpha0 beta0
-alpha = alpha0;
-beta = beta0;
-eqn1 = a^1.5*(alpha-beta-(sin(alpha)-sin(beta))) == sqrt(mu)*delta_t;
-eqn2 = 1/(4*a)*(r1+r2+c) == sin(alpha/2)^2;
-eqn3 = 1/(4*a)*(r1+r2-c) == sin(beta/2)^2;
+% % Solve for semi-major axis, alpha, beta
+syms a alpha0 beta0 real
 
-soln = vpasolve([eqn1,eqn2,eqn3], [a,alpha0,beta0]);
+v1 = [];
+tp_m = [];
+for i = 1:length(theta)
+    if sin(theta(i)) > 0
+        tp = (sqrt(2)/(3*sqrt(mu)))*(s^(3/2)-(s-c)^(1.5));
+        beta2 = beta0;
+        tp_m = [tp_m;tp];
+    else
+        tp = (sqrt(2)/(3*sqrt(mu)))*(s^(3/2)+(s-c)^(1.5));
+        beta2 = -beta0;
+        tp_m = [tp_m;tp];
+    end
 
-beta1 = double(soln.beta0);
+    if t_F(i) <= t_m
+        alpha2 = alpha0;
+    else
+        alpha2 = 2*pi - alpha0;
+    end
+    eqn1 = a^1.5*(alpha2-beta2-(sin(alpha2)-sin(beta2))) == sqrt(mu)*delta_t;
+    eqn2 = 1/(4*a)*(r1+r2+c) == sin(alpha2/2)^2;
+    eqn3 = 1/(4*a)*(r1+r2-c) == sin(beta2/2)^2;
 
-% Determine if transfer is elliptic or hyperbolic
-if beta1 < 0
-    t_parabolic = ((r1+r2+c)^1.5+(r1+r2-c)^1.5)/(6*sqrt(mu));
-else
-    t_parabolic = ((r1+r2+c)^1.5-(r1+r2-c)^1.5)/(6*sqrt(mu));
+    soln = vpasolve([eqn1,eqn2,eqn3],[a,alpha0,beta0]);
+    a2 = double(soln.a);
+    a2_val = real(a2^2);
+    alpha = double(soln.alpha0);
+    beta = double(soln.beta0);
+    if a2_val < 0
+        disp("This transfer is hyperbolic")
+        v1 = [v1;NaN,NaN,NaN];
+    else
+        disp("This transfer is elliptic")
+        A = sqrt(mu/(4*a2))*cot(alpha/2);
+        B = sqrt(mu/(4*a2))*cot(beta/2);
+        v1 = [v1;(B+A).*c_hat + (B-A).*r1_hat];
+    end
+end
 end
 
-% Calculate velocities
-if t_parabolic > delta_t
-    disp("This requested transfer is hyperoblic")
-    v1 = [NaN,NaN,NaN];
-elseif t_parabolic < delta_t
-    disp("This requested transfer is elliptic")
-    v1 = [];
-        for i = 1:length(theta)
-            if theta(i) < pi
-                beta2 = beta0;
-            elseif theta(i) > pi
-                beta2 = -beta0;
-            end
-            if t_F(i) <= t_m
-                alpha2 = alpha0;
-            else
-                alpha2 = 2*pi - alpha0;
-            end
-            eqn4 = a^1.5*(alpha2-beta2-(sin(alpha2)-sin(beta2))) == sqrt(mu)*delta_t;
-            eqn5 = 1/(4*a)*(r1+r2+c) == sin(alpha2/2)^2;
-            eqn6 = 1/(4*a)*(r1+r2-c) == sin(beta2/2)^2;
 
-            soln = vpasolve([eqn4,eqn5,eqn6],[a,alpha0,beta0]);
-            a2 = double(soln.a);
-            alpha = double(soln.alpha0);
-            beta = double(soln.beta0);
-            A = sqrt(mu/(4*a2))*cot(alpha/2);
-            B = sqrt(mu/(4*a2))*cot(beta/2);
-            v1 = [v1;(B+A).*c_hat + (B-A).*r1_hat];
-        end
-end
-
-end
 
 function [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
@@ -288,7 +265,7 @@ function [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
     T = (2*pi)/n;
 
     % Time of periapsis passage
-    f0 = atan2(dot(r0,e_hat),dot(r0,e_hat_perp));
+    f0 = atan2(dot(r0,e_hat_perp),dot(r0,e_hat));
     E0 = 2*atan2(sqrt((1-e))*sin(f0/2),sqrt((1+e))*cos(f0/2));
     tp = t0 - (1/n)*(E0-e*sin(E0));
 end
