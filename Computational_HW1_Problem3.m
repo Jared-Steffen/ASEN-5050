@@ -2,23 +2,23 @@ clc; clear; close all
 
 %% Problem Statement
 %{
-Write a third computer program “package” that will solve Lambert’s problem: Given
-two position vectors and a specified interval of time, compute the necessary initial
-velocity. Your program should:
+Write a third computer program “package” that will solve Lambert’s problem: 
+Given two position vectors and a specified interval of time, compute the
+necessary initial velocity. Your program should:
 
 (a) Determine if the requested transfer is a hyperbolic or elliptic orbit.
 
 (b) Compute both elliptic transfers (θ < π, θ > π), if they exist.
 
-Use your programs from Questions 1 and 2 to check your results. Then carry out the
-following computations, all using μ = 1 and a given set of position vectors r1 = [1, 0, 0]
-and r2 = [0, 2, 0].
+Use your programs from Questions 1 and 2 to check your results. 
+Then carry out the following computations, all using μ = 1 and a given set
+of position vectors r1 = [1, 0, 0] and r2 = [0, 2, 0].
 
-(a) What is the minimum energy transfer ellipse between these two points? What
-times of transfer correspond to this transfer ellipse?
+(a) What is the minimum energy transfer ellipse between these two points? 
+What times of transfer correspond to this transfer ellipse?
 
-(b) What is the minimum eccentricity transfer ellipse between these two points? What
-times of transfer correspond to this transfer ellipse?
+(b) What is the minimum eccentricity transfer ellipse between these two points?
+What times of transfer correspond to this transfer ellipse?
 
 (c) What is the parabolic transfer time between these two points? Choose transfer
 times equal to twice of the parabolic transfer times and solve Lambert’s problem
@@ -143,7 +143,8 @@ grid on; grid minor
 xlabel("$x$ [km]",'Interpreter','latex')
 ylabel("$y$ [km]",'Interpreter','latex')
 zlabel("$z$ [km]",'Interpreter','latex')
-title("Transfer Orbits for Lambert's Problem when $\Delta t = 2t_{parabolic}$",'Interpreter','latex')
+title("Transfer Orbits for Lambert's Problem when " + ...
+    "$\Delta t = 2t_{parabolic}$",'Interpreter','latex')
 legend('Transfer Orbit 1','Transfer Orbit 2','r1','r2')
 
 %% Functions (some are taken from problems 1 and 2)
@@ -283,11 +284,13 @@ function f = keplers_equation(e,t,tp,n,error)
             current_E = M_star(j);
             Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
             while Euler_function > error
-                delta_E = -(M_star(j) - current_E+e(j)*sin(current_E))/(-1+e(j)*cos(current_E));
+                delta_E = -(M_star(j) - current_E+e(j)*sin(current_E))/...
+                    (-1+e(j)*cos(current_E));
                 current_E = current_E + delta_E;
                 Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
             end
-            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2),sqrt(1-e(j))*cos(current_E/2));
+            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2),sqrt(1-e(j))*...
+                cos(current_E/2));
         end
     end
 end
@@ -301,7 +304,8 @@ function [r,v] = solution_2BP(mu,Omega,i,w,f,p,e)
     y_hat = [0 1 0]';
     z_hat = [0 0 1]';
     n_Omega_hat = cos(Omega)*x_hat + sin(Omega)*y_hat;
-    n_Omega_hat_perp = -cos(i)*sin(Omega)*x_hat + cos(i)*cos(Omega)*y_hat + sin(i)*z_hat;
+    n_Omega_hat_perp = -cos(i)*sin(Omega)*x_hat + cos(i)*cos(Omega)*...
+        y_hat + sin(i)*z_hat;
     e_hat = cos(w)*n_Omega_hat + sin(w)*n_Omega_hat_perp;
     e_hat_perp = -sin(w)*n_Omega_hat + cos(w)*n_Omega_hat_perp;
 

@@ -40,7 +40,7 @@ v0 = [-5 5 0]; % km/s
 t0 = 0; % s
 
 % Determine orbital elements
-[a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0);
+[a,p,e,i,Omega,w,T,n,tp,h,epsilon] = orbital_elements(mu,r0,v0,t0);
 
 disp('Part 1i Results:')
 disp("Semi-major axis: " + a + " km")
@@ -50,6 +50,8 @@ disp("RAAN: " + rad2deg(Omega) + " degrees")
 disp("Argument of Periapsis: " + rad2deg(w) + " degrees")
 disp("Time of Periapsis Passage (realtive to t0): " + tp + " s")
 disp("Orbital Period: " + T + " s")
+disp("Angular Momentum: " + h + "km^2/s")
+disp("Energy: " + epsilon )
 
 % Total simulation time
 t_step = 60; % s
@@ -123,12 +125,11 @@ for i = 1:length(T)
     ylabel('y distance [km]')
     zlabel('z distance [km]')
     title('Position Space for 2 Orbital Periods')
-    % exportgraphics(gcf,['part_1ii_position_space' num2str(i) '.png'], 'Resolution', 300);
 end
 
 
 %% Functions
-function [a,p,e,i,Omega,w,T,n,tp] = orbital_elements(mu,r0,v0,t0)
+function [a,p,e,i,Omega,w,T,n,tp,h,epsilon] = orbital_elements(mu,r0,v0,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
 
     % Unit vectors
@@ -190,11 +191,13 @@ function f = keplers_equation(e,t,tp,n,error)
             current_E = M_star(j);
             Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
             while Euler_function > error
-                delta_E = -(M_star(j) - current_E+e(j)*sin(current_E))/(-1+e(j)*cos(current_E));
+                delta_E = -(M_star(j) - current_E+e(j)*sin(current_E))/...
+                    (-1+e(j)*cos(current_E));
                 current_E = current_E + delta_E;
                 Euler_function = abs(M_star(j) - current_E+e(j)*sin(current_E));
             end
-            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2),sqrt(1-e(j))*cos(current_E/2));
+            f(i,j) = 2*atan2(sqrt(1+e(j))*sin(current_E/2),sqrt(1-e(j))*...
+                cos(current_E/2));
         end
     end
 end
@@ -208,7 +211,8 @@ function [r,v] = solution_2BP(mu,Omega,i,w,f,p,e)
     y_hat = [0 1 0]';
     z_hat = [0 0 1]';
     n_Omega_hat = cos(Omega)*x_hat + sin(Omega)*y_hat;
-    n_Omega_hat_perp = -cos(i)*sin(Omega)*x_hat + cos(i)*cos(Omega)*y_hat + sin(i)*z_hat;
+    n_Omega_hat_perp = -cos(i)*sin(Omega)*x_hat + ...
+        cos(i)*cos(Omega)*y_hat + sin(i)*z_hat;
     e_hat = cos(w)*n_Omega_hat + sin(w)*n_Omega_hat_perp;
     e_hat_perp = -sin(w)*n_Omega_hat + cos(w)*n_Omega_hat_perp;
 

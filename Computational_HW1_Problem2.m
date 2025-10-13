@@ -2,8 +2,9 @@ clc; clear; close all
 
 %% Problem Statement
 %{
-Write a different computer program “package” that will numerically integrate the 2-
-body problem in Cartesian coordinates, i.e., solve the equations of motion:
+Write a different computer program “package” that will numerically
+integrate the 2- body problem in Cartesian coordinates, i.e., solve the
+equations of motion:
 
  ̇x = u
  ̇y = v
@@ -12,24 +13,26 @@ body problem in Cartesian coordinates, i.e., solve the equations of motion:
  ̇v = −μy/r3
  ̇w = −μz/r3
 
-where r = sqrt(x^2 + y^2 + z^2). The program should accept μ, initial values of position and
-velocity, and a final time as input parameters. For example, you can use the variable
-step RK4/5 integrator in Matlab, or you can write your own. Make sure you have your
-error tolerances properly set. Your program should:
+where r = sqrt(x^2 + y^2 + z^2). The program should accept μ, initial
+values of position and velocity, and a final time as input parameters.
+For example, you can use the variable step RK4/5 integrator in Matlab, or
+you can write your own. Make sure you have your error tolerances properly
+set. Your program should:
 
-(a) Produce data files suitable for plotting the trajectory (x, y, z coordinates) and the
-velocity (u, v, w values) as a function of time and against each other (i.e., as a
-3-D plot showing the actual trajectory).
+(a) Produce data files suitable for plotting the trajectory
+(x, y, z coordinates) and the velocity (u, v, w values) as a function of
+time and against each other (i.e., as a 3-D plot showing the 
+actual trajectory).
 
-(b) Produce data files, suitable for plotting, containing the computed values of the
-orbit elements, energy, and angular momentum at each point in time. For the 2-
-body problem, these should all be constant values. Later we will use this program
-when we have additional forces, and we will see that the orbit elements will then
-vary with time.
+(b) Produce data files, suitable for plotting, containing the computed
+values of the orbit elements, energy, and angular momentum at each point 
+in time. For the 2-body problem, these should all be constant values.
+Later we will use this program when we have additional forces, and we
+will see that the orbit elements will then vary with time.
 
-Use your programs from Question 1 to check your results. Specifically, numerically
-integrate the orbit in Problem 1-i and compare with the analytic solution
-you generated.
+Use your programs from Question 1 to check your results. Specifically,
+numerically integrate the orbit in Problem 1-i and compare with the
+analytic solution you generated.
 %}
 
 % ICs
@@ -66,7 +69,8 @@ for j = 1:height(h_vec)
 end
 
 % Plotting
-ylabels_pos = ["$x$ [km]","$y$ [km]","$z$ [km]","$\dot{x}$ [km/s]","$\dot{y}$ [km/s]","$\dot{z}$ [km/s]"];
+ylabels_pos = ["$x$ [km]","$y$ [km]","$z$ [km]","$\dot{x}$ [km/s]",...
+    "$\dot{y}$ [km/s]","$\dot{z}$ [km/s]"];
 
 figure(1);
 for i = 1:width(state)/2
@@ -154,7 +158,18 @@ ylabel("Eccetricity $e$",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Orbital Elements: Geometry')
 
-% exportgraphics(gcf, 'part_2_orbital_geometry.png', 'Resolution', 300);
+figure(7);
+subplot(2,1,1)
+plot(t/3600,h,'LineWidth',2)
+xlabel('Time [hr]')
+ylabel("Angular Momentum $h$ [$km^2/s$]",'Interpreter','latex')
+grid on;grid minor
+subplot(2,1,2)
+plot(t/3600,epsilon,'LineWidth',2)
+xlabel('Time [hr]')
+ylabel("Energy $\varepsilon$",'Interpreter','latex')
+grid on;grid minor
+sgtitle('Integrals of Motion')
 
 %% Functions
 function [var_dot] = OrbitEOM(~,var,mu)
