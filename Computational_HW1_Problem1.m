@@ -129,7 +129,7 @@ end
 
 
 %% Functions
-function [a,p,e,i,Omega,w,T,n,tp,h,epsilon] = orbital_elements(mu,r0,v0,t0)
+function [a,p,e,i,Omega,w,T,n,tp0,h,epsilon] = orbital_elements(mu,r0,v0,t0)
     % Goal: Generate necessary orbital elements to describe an orbit
 
     % Unit vectors
@@ -175,7 +175,7 @@ function [a,p,e,i,Omega,w,T,n,tp,h,epsilon] = orbital_elements(mu,r0,v0,t0)
     % Time of periapsis passage
     f0 = atan2(dot(r0,e_hat_perp),dot(r0,e_hat));
     E0 = 2*atan2(sqrt((1-e))*sin(f0/2),sqrt((1+e))*cos(f0/2));
-    tp = t0 - (1/n)*(E0-e*sin(E0));
+    tp0 = t0 - (1/n)*(E0-e*sin(E0));
 end
 
 function f = keplers_equation(e,t,tp,n,error)

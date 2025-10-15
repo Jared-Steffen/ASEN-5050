@@ -60,7 +60,7 @@ options = odeset('RelTol',1e-6,'AbsTol',1e-9);
 [t,state] = ode45(@(tspan,var) OrbitEOM(tspan,var,mu),tspan,var,options);
 
 % Orbital Elements
-[a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0);
+[a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t);
 
 % Normalize h
 h = zeros(height(state),1);
@@ -171,6 +171,50 @@ ylabel("Energy $\varepsilon$",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Integrals of Motion')
 
+figure(8);
+plot(t/3600,tp/3600,'LineWidth',2)
+grid on; grid minor
+xlabel('Time [hr]')
+ylabel('Time of (Most Recent) Periapsis Passage [hr]')
+title('Time of (Most Recent) Periapsis Passage')
+
+
+% Output results
+X = array2table(state,'VariableNames', {'x','y','z','u','v','w'});
+
+vars = X.Properties.VariableNames;
+for i = 1:numel(vars)
+    if isnumeric(X.(vars{i}))
+        X.(vars{i}) = round(X.(vars{i}), 5);
+    end
+end
+
+writetable(X, 'state_data.csv');
+
+oe_data = struct('a',a,'e',e,'i',rad2deg(inc),'w',rad2deg(w),'RAAN',rad2deg(Omega),'t_p',tp);
+X = struct2table(oe_data);
+
+vars = X.Properties.VariableNames;
+for i = 1:numel(vars)
+    if isnumeric(X.(vars{i}))
+        X.(vars{i}) = round(X.(vars{i}), 5);
+    end
+end
+
+writetable(X, 'oe_data.csv');
+
+iom_data = struct('h',h,'Energy',epsilon);
+X = struct2table(iom_data);
+
+vars = X.Properties.VariableNames;
+for i = 1:numel(vars)
+    if isnumeric(X.(vars{i}))
+        X.(vars{i}) = round(X.(vars{i}), 5);
+    end
+end
+
+writetable(X, 'iom_data.csv');
+
 %% Functions
 function [var_dot] = OrbitEOM(~,var,mu)
     % Goal: Output ODEs for ode45
@@ -198,7 +242,7 @@ function [var_dot] = OrbitEOM(~,var,mu)
     var_dot = [x_dot;y_dot;z_dot;u_dot;v_dot;w_dot];
 end
 
-function [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
+function [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t)
     % Goal: Generate necessary orbital elements to describe an orbit
     
     % Extract r and v at each timestep
@@ -253,8 +297,8 @@ function [a,e,inc,Omega,w,tp,h_vec,epsilon] = orbital_elements(mu,state,t0)
         n = sqrt(mu/a(j)^3);
     
         % Time of periapsis passage
-        f0 = atan2(dot(r(j,:),e_hat_perp),dot(r(j,:),e_hat));
-        E0 = 2*atan2(sqrt((1-e(j)))*sin(f0/2),sqrt((1+e(j)))*cos(f0/2));
-        tp(j) = t0 - (1/n)*(E0-e(j)*sin(E0));
+        f = atan2(dot(r(j,:),e_hat_perp),dot(r(j,:),e_hat));
+        E = 2*atan2(sqrt((1-e(j)))*sin(f/2),sqrt((1+e(j)))*cos(f/2));
+        tp(j) = t(j) - (1/n)*mod((E-e(j)*sin(E)),2*pi);
     end
 end
