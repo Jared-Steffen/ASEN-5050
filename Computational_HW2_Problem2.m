@@ -166,7 +166,8 @@ xlabel('Time [hr]')
 ylabel("Eccetricity $e$",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Orbital Elements: Geometry')
-legend('Numerical Integration','Secular (No Short Period Corrections)','Secular with Short Period Corrections')
+legend('Numerical Integration','Secular (No Short Period Corrections)',...
+    'Secular with Short Period Corrections')
 
 figure(3);
 subplot(3,1,1)
@@ -194,7 +195,8 @@ plot(t/3600,rad2deg(i_num_bar),'g','LineWidth',2)
 ylabel("$i$ [degrees]",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Orbital Elements: Angles')
-legend('Numerical Integration','Secular (No Short Period Corrections)','Secular with Short Period Corrections')
+legend('Numerical Integration','Secular (No Short Period Corrections)',....
+    'Secular with Short Period Corrections')
 
 figure(4);
 plot(t/3600,rad2deg(sigma),'LineWidth',2)
@@ -205,7 +207,8 @@ grid on; grid minor
 xlabel('Time [hr]')
 ylabel('$\sigma$ [degrees]','Interpreter','latex')
 title('Orbital Elements: $\sigma = -nt_p$','Interpreter','latex')
-legend('Numerical Integration','Secular (No Short Period Corrections)','Secular with Short Period Corrections')
+legend('Numerical Integration','Secular (No Short Period Corrections)',...
+    'Secular with Short Period Corrections')
 
 
 
@@ -313,9 +316,11 @@ function [w_bar_d,O_bar_d,s_bar_d] = FirstOrderAveragedLPEs_J2(alpha,mu,RE,J2)
 
     % Calculate 1st order averages
     for j = 1:length(a) 
-        w_bar_d = 3*sqrt(mu/a(j)^3)*((RE^2*J2)/(a(j)^2*(1-e(j)^2)^2))*(1-1.25*(sin(i(j)))^2);
+        w_bar_d = 3*sqrt(mu/a(j)^3)*((RE^2*J2)/(a(j)^2*(1-e(j)^2)^2))*...
+            (1-1.25*(sin(i(j)))^2);
         O_bar_d = -1.5*sqrt(mu/a(j)^3)*((RE^2*J2)/(a(j)^2*(1-e(j)^2)^2))*cos(i(j));
-        s_bar_d = 1.5*sqrt(mu/a(j)^3)*((RE^2*J2)/(a(j)^2*(1-e(j)^2)^2))*sqrt(1-e(j)^2)*(1-1.5*(sin(i(j)))^2);
+        s_bar_d = 1.5*sqrt(mu/a(j)^3)*((RE^2*J2)/(a(j)^2*(1-e(j)^2)^2))*...
+            sqrt(1-e(j)^2)*(1-1.5*(sin(i(j)))^2);
     end
 
 end
