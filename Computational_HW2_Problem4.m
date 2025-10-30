@@ -44,11 +44,11 @@ T = (2*pi)/n;
 
 % Time vector
 t0 = 0; % s
-t_step = 0.1; % s
-tspan = t0:t_step:2*T;
+t_step = 0.01; % s
+tspan = t0:t_step:5*T;
 
 % ode45 call
-options = odeset('RelTol',1e-8,'AbsTol',1e-10);
+options = odeset('RelTol',1e-12,'AbsTol',1e-14);
 [t1,state1] = ode45(@(tspan,var) OrbitEOM_constF(tspan,var,mu,g(1)),tspan,var,options);
 [t2,state2] = ode45(@(tspan,var) OrbitEOM_constF(tspan,var,mu,g(2)),tspan,var,options);
 [t3,state3] = ode45(@(tspan,var) OrbitEOM_constF(tspan,var,mu,g(3)),tspan,var,options);
@@ -113,6 +113,109 @@ ylabel("Energy $\varepsilon$",'Interpreter','latex')
 grid on;grid minor
 sgtitle('Integrals of Motion for g = 1.0')
 
+figure(5);
+subplot(3,1,1)
+plot(t1,a1,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Semi-major Axis [km]')
+grid on; grid minor
+subplot(3,1,2)
+plot(t1,e1,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Eccentricity [km]')
+grid on; grid minor
+subplot(3,1,3)
+plot(t1,rad2deg(w_tilde1),'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Longitude of Periapsis [degrees]')
+grid on; grid minor
+sgtitle('LPEs For Constant x-Acceleration g = 0.001')
+
+figure(6);
+subplot(3,1,1)
+plot(t2,a2,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Semi-major Axis [km]')
+grid on; grid minor
+subplot(3,1,2)
+plot(t2,e2,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Eccentricity [km]')
+grid on; grid minor
+subplot(3,1,3)
+plot(t2,rad2deg(w_tilde2),'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Longitude of Periapsis [degrees]')
+grid on; grid minor
+sgtitle('LPEs For Constant x-Acceleration g = 0.01')
+
+figure(7);
+subplot(3,1,1)
+plot(t3,a3,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Semi-major Axis [km]')
+grid on; grid minor
+subplot(3,1,2)
+plot(t3,e3,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Eccentricity [km]')
+grid on; grid minor
+subplot(3,1,3)
+plot(t3,rad2deg(w_tilde3),'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Longitude of Periapsis [degrees]')
+grid on; grid minor
+sgtitle('LPEs For Constant x-Acceleration g = 0.1')
+
+figure(8);
+subplot(3,1,1)
+plot(t4,a4,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Semi-major Axis [km]')
+grid on; grid minor
+subplot(3,1,2)
+plot(t4,e4,'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Eccentricity [km]')
+grid on; grid minor
+subplot(3,1,3)
+plot(t4,rad2deg(w_tilde4),'LineWidth',2)
+xlabel('Time [s]')
+ylabel('Longitude of Periapsis [degrees]')
+grid on; grid minor
+sgtitle('LPEs For Constant x-Acceleration g = 1.0')
+
+figure(9);
+plot3(state1(:,1),state1(:,2),state1(:,3),'LineWidth',2)
+grid on; grid minor
+xlabel('x-position [km]')
+ylabel('y-position [km]')
+zlabel('z-position [km]')
+title('3D Position for Contant x-Acceleration g = 0.001')
+
+figure(10);
+plot3(state2(:,1),state2(:,2),state2(:,3),'LineWidth',2)
+grid on; grid minor
+xlabel('x-position [km]')
+ylabel('y-position [km]')
+zlabel('z-position [km]')
+title('3D Position for Contant x-Acceleration g = 0.01')
+
+figure(11);
+plot3(state3(:,1),state3(:,2),state3(:,3),'LineWidth',2)
+grid on; grid minor
+xlabel('x-position [km]')
+ylabel('y-position [km]')
+zlabel('z-position [km]')
+title('3D Position for Contant x-Acceleration g = 0.1')
+
+figure(12);
+plot3(state4(:,1),state4(:,2),state4(:,3),'LineWidth',2)
+grid on; grid minor
+xlabel('x-position [km]')
+ylabel('y-position [km]')
+zlabel('z-position [km]')
+title('3D Position for Contant x-Acceleration g = 1.0')
 
 %% Functions
 function [var_dot] = OrbitEOM_constF(~,var,mu,g)
@@ -182,7 +285,7 @@ function [a,e,w_tilde,hx_vec,epsilon] = orbital_elements_constF(mu,g,state)
         w = atan2(dot(e_hat,n_Omega_hat_perp),dot(e_hat,n_Omega_hat));
 
         % Longitude of Peripasis
-        w_tilde(j) = w + Omega;
+        w_tilde(j) = mod(w + Omega,2*pi);
     
         % Specific energy
         epsilon(j) = 0.5*norm(v(j,:))^2-mu/norm(r(j,:))-g*x(j);
